@@ -9,6 +9,8 @@ build:
     - apt update && apt install zip
   script:
     - export zip_path=$(pwd)
+    - python drugs_shooting_list/parser/load.py
+    - mv results.json drugs_shooting_list
     - zip --exclude *.pyc -r ${zip_path}/${ZIP_NAME} drugs_shooting_list yc_functions.py
     - pip install -r requirements.txt --root requirements
     - cd requirements/usr/local/lib/python3.7/site-packages/
@@ -18,8 +20,8 @@ build:
     paths:
     - ${ZIP_NAME}
     expire_in: 10 mins
-  only:
-    - master
+#  only:
+#    - master
 
 yc_deploy:
   stage: deploy
@@ -30,6 +32,7 @@ yc_deploy:
     entrypoint: yc_functions.message_handler
     memory: 128m
     execution_timeout: 1s
+    data_file_path: "/function/code/drugs_shooting_list/results.json"
   before_script:
     - pip install awscli
     - curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh --output install.sh
@@ -50,5 +53,7 @@ yc_deploy:
       --package-bucket-name ${BUCKET_NAME}
       --package-object-name ${ZIP_NAME}
       --description ${CI_COMMIT_SHORT_SHA}
+      --environment TOKEN=${TOKEN}
+      --environment DATA_FILE_PATH=${data_file_path}
   only:
     - master
