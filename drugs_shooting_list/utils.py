@@ -1,6 +1,6 @@
 import json
 
-from six import wraps
+from functools import wraps
 from telegram import Update
 
 from drugs_shooting_list.settings import DATA_FILE_PATH
@@ -9,11 +9,11 @@ _data = None
 
 
 def to_tg_update(bot):
-    @wraps
     def wrapped(fn):
-        def inner(event, **kwargs):
+        @wraps(fn)
+        def inner(event, *args, **kwargs):
             update = Update.de_json(json.loads(event.get('body')), bot)
-            return fn(update, **kwargs)
+            return fn(update, *args, **kwargs)
         return inner
     return wrapped
 

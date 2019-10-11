@@ -1,6 +1,6 @@
 
 from drugs_shooting_list.bot import bot
-from drugs_shooting_list.utils import get_drug_info
+from drugs_shooting_list.utils import get_drug_info, to_tg_update
 
 
 def echo_handler(update, context):
@@ -20,6 +20,7 @@ def echo_handler(update, context):
     }
 
 
+@to_tg_update(bot)
 def message_handler(update, context):
 
     bot.send_message(
