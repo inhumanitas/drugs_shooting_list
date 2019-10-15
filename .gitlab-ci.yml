@@ -5,33 +5,50 @@ stages:
 build:
   stage: build
   image: python:latest
+  before_script:
+    - apt update && apt install zip
   script:
-    - pip install awscli
-    - zip ${zip_name} -r drugs_shooting_list requirements/* yc_functions.py
-    - aws --endpoint-url=https://storage.yandexcloud.net \
-        s3 cp ${zip_name} s3://${bucket_name}/${zip_name}
-  only:
-    - master
+    - export zip_path=$(pwd)
+    - zip --exclude *.pyc -r ${zip_path}/${ZIP_NAME} drugs_shooting_list yc_functions.py
+    - pip install -r requirements.txt --root requirements
+    - cd requirements/usr/local/lib/python3.7/site-packages/
+    - zip --exclude *.pyc -ur ${zip_path}/${ZIP_NAME} *
   artifacts:
     when: on_success
     paths:
-    - ${zip_name}
+    - ${ZIP_NAME}
     expire_in: 10 mins
+  only:
+    - master
 
 yc_deploy:
   stage: deploy
-  script:
+  image: python:latest
+  variables:
+    function_name: main-messages-handler
+    runtime: python37
+    entrypoint: yc_functions.message_handler
+    memory: 128m
+    execution_timeout: 1s
+  before_script:
+    - pip install awscli
     - curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh --output install.sh
-    - sudo bash install.sh -n -i /opt/yandex-cloud
-    - yc config set token $YC_OAUTH
-    - yc serverless function version create
-      --function-name=main-messages-handler
-      --runtime python37
-      --entrypoint yc_functions.message_handler
-      --memory 128m
-      --execution-timeout 1s
-      --package-bucket-name ${bucket_name}
-      --package-object-name ${zip_name}
+    - bash install.sh -n -i /opt/yandex-cloud
+  script:
+    - aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+    - aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+    - aws configure set region ru-central1
+    - aws s3 --endpoint-url=https://storage.yandexcloud.net cp ${ZIP_NAME} s3://${BUCKET_NAME}
+    - /opt/yandex-cloud/bin/yc config set token "$YC_OAUTH"
+    - /opt/yandex-cloud/bin/yc serverless function version create
+      --function-name ${function_name}
+      --folder-id ${FOLDER_ID}
+      --runtime ${runtime}
+      --entrypoint ${entrypoint}
+      --memory ${memory}
+      --execution-timeout ${execution_timeout}
+      --package-bucket-name ${BUCKET_NAME}
+      --package-object-name ${ZIP_NAME}
+      --description ${CI_COMMIT_SHORT_SHA}
   only:
     - master
-    expire_in: 1 hour
