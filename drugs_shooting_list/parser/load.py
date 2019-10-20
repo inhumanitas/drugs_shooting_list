@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import json
-import re
-from xml.etree import ElementTree
 from urllib import request
 
 url = 'https://encyclopatia.ru/wiki/%D0%A0%D0%B0%D1%81%D1%81%D1%82%D1%80%D0%B5%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9_%D1%81%D0%BF%D0%B8%D1%81%D0%BE%D0%BA_%D0%BF%D1%80%D0%B5%D0%BF%D0%B0%D1%80%D0%B0%D1%82%D0%BE%D0%B2'
@@ -52,6 +50,7 @@ class EncyclopatiaParser:
             return self.parse_row(row)
         except ValueError as e:
             print(e)
+            return next(self)
 
     @classmethod
     def parse_row(cls, row):
@@ -68,8 +67,6 @@ class EncyclopatiaParser:
         key = key.strip()
         description = description.strip().strip('.')
 
-        keys = []
-
         if '(' in key:
             head, _keys = key.split('(', 1)
             keys = [head] + _keys.split('/')
@@ -84,7 +81,7 @@ class EncyclopatiaParser:
 
         keys = list(
             map(
-                lambda x: x.strip().strip('(').strip(')'),
+                lambda x: x.strip().strip('(').strip(')').lower(),
                 keys
             )
         )
@@ -93,9 +90,9 @@ class EncyclopatiaParser:
 
 def load(data):
     results = {}
-    for keys in EncyclopatiaParser(data):
-        print(keys)
-
+    for data in EncyclopatiaParser(data):
+        (key, *other_keys), value = data
+        results[key] = other_keys, value
     return results
 
 
