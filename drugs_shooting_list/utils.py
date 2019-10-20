@@ -5,7 +5,32 @@ from telegram import Update
 
 from drugs_shooting_list.settings import DATA_FILE_PATH
 
-_data = None
+
+class Data:
+    _data = None
+
+    def load(self, json_path=DATA_FILE_PATH):
+        self._data = json.load(open(json_path))
+
+    def get(self, key, not_found_message):
+        if not self._data:
+            self.load()
+        result = not_found_message
+        key = key.lower()
+        if key in self._data:
+            keys, value = self._data.get(key)
+            if value:
+                result = value
+            elif keys:
+                for cur_key in keys:
+                    value = DATA.get(cur_key, None)
+                    if value:
+                        result = value
+                        break
+        return result
+
+
+DATA = Data()
 
 
 def to_tg_update(bot):
@@ -25,7 +50,4 @@ def get_drug_info(drug: str, not_found_message: str = 'Не найдено'):
     :param not_found_message: return message for not found rows
     :return: info about drug
     """
-    global _data
-    if _data is None:
-        _data = json.load(open(DATA_FILE_PATH))
-    return _data.get(drug, not_found_message)
+    return DATA.get(drug, not_found_message)
