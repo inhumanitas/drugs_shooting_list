@@ -1,6 +1,15 @@
 stages:
+  - test
   - build
   - deploy
+
+test:
+  stage: test
+  image: python:latest
+  before_script:
+    - pip install -r test_requirements.txt
+  script:
+    - python -m pytest drugs_shooting_list
 
 build:
   stage: build
