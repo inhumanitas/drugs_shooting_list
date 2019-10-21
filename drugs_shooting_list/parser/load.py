@@ -19,6 +19,8 @@ def get_data(url):
 
 
 class EncyclopatiaParser:
+    base_url = 'https://encyclopatia.ru'
+
     started = False
     start_tag = '<h2><span class="mw-headline" id=".D0.90">А</span></h2>'
     end_tag = '<h2><span class="mw-headline" id=".D0.95.D1.89.D1.91">Ещё</span></h2>'
@@ -73,26 +75,46 @@ class EncyclopatiaParser:
         elif '/' in key:
             keys = key.split('/')
         else:
-            keys = [key]
+            keys = key.split()
 
         if description.strip().startswith('см.'):
-            keys.append(description.strip('см.'))
+            keys.append(description.replace('см.', ''))
             description = None
+        else:
+            description = row.strip('</>lui')
 
-        keys = list(
-            map(
-                lambda x: x.strip().strip('(').strip(')').lower(),
-                keys
-            )
-        )
+        keys = [x.lower().strip('(').strip(')').strip() for x in keys]
+        keys = [x.strip('—').strip() for x in keys]
+
         return keys, description
+
+    @classmethod
+    def normalize_html_to_tg(cls, html):
+        return html.replace(
+            '<del>', '<i>'
+        ).replace(
+            '</del>', '</i>'
+        ).replace(
+            'href="/', f'href="{cls.base_url}/')
 
 
 def load(data):
     results = {}
     for data in EncyclopatiaParser(data):
-        (key, *other_keys), value = data
-        results[key] = other_keys, value
+        (key, *alter_keys), value = data
+
+        value = value and EncyclopatiaParser.normalize_html_to_tg(value)
+
+        if key in results:
+            cur_alter_keys, old_value = results[key]
+            new_value = value or old_value
+            results[key] = alter_keys+cur_alter_keys, new_value
+        else:
+            results[key] = alter_keys, value
+
+        for alter_key in alter_keys:
+            if alter_key not in results:
+                results[alter_key] = [key], None
     return results
 
 

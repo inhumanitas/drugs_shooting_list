@@ -6,6 +6,7 @@ data = {
     'key3': (['key2'], None),
     'key4': ([], None),
     'key5': ([], ''),
+    'key6': (['key7'], 'value6'),
     # 'key6': (['key6'], None), ???
 }
 
@@ -30,7 +31,7 @@ def test_linked_get():
 
 
 def test_empty_get():
-    keys = ('key4', 'key5', 'key6')
+    keys = ('key4', 'key5', '__key__')
     value = 'empty'
     for key in keys:
         assert utils.get_drug_info(key, not_found_message=value) == value
