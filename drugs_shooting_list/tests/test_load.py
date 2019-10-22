@@ -8,7 +8,7 @@ class TestEncylopatiaParser:
         key = 'Оциллококцинум'
         desc = 'у гомеопатии не может быть доказательств эффективности'
         row = f'<li>{key}: {desc}</li>'
-        result = [key.lower()], desc
+        result = [key.lower()], f'{key}: {desc}'
         assert self.parse(row) == result
 
     def test_simple_row_dash(self):
@@ -22,7 +22,7 @@ class TestEncylopatiaParser:
         key = 'Оциллококцинум'
         desc = 'у гомеопатии не может быть доказательств эффективности'
         row = f'<li>{key} — {desc}</li>'
-        result = [key.lower()], desc
+        result = [key.lower()], f'{key} — {desc}'
         assert self.parse(row) == result, row
 
     def test_linked_desc(self):
@@ -35,21 +35,22 @@ class TestEncylopatiaParser:
         key1, key2 = 'Циннабсин', 'Cinnabsin'
         desc = 'у гомеопатии не может быть доказательств эффективности'
         row = f'<li>{key1} ({key2}): {desc}.</li>'
-        result = [key1.lower(), key2.lower()], desc
+        result = [key1.lower(), key2.lower()], f'{key1} ({key2}): {desc}.'
         assert self.parse(row) == result, row
 
     def test_multiple_keys_slash_sep(self):
         key1, key2 = 'Циннабсин', 'Cinnabsin'
         desc = 'у гомеопатии не может быть доказательств эффективности'
         row = f'<li>{key1} ({key1}/{key2}): {desc}.</li>'
-        result = [key1.lower(), key1.lower(), key2.lower()], desc
+        result = [key1.lower(), key1.lower(), key2.lower()], \
+                 f'{key1} ({key1}/{key2}): {desc}.'
         assert self.parse(row) == result, row
 
     def test_key_with_slash_sep(self):
         key1, key2 = 'Циннабсин', 'Cinnabsin'
         desc = 'у гомеопатии не может быть доказательств эффективности'
         row = f'<li>{key1}/{key2}: {desc}.</li>'
-        result = [key1.lower(), key2.lower()], desc
+        result = [key1.lower(), key2.lower()], f'{key1}/{key2}: {desc}.'
         assert self.parse(row) == result, row
 
     def test_custom_row(self):
@@ -59,3 +60,16 @@ class TestEncylopatiaParser:
               'интерфероны при ОРВИ бесполезны (см. ниже)'
         keys, value = self.parse(row)
         assert keys == ['анаферон']
+
+    def test_key_strip(self):
+        key = 'Дибазол'
+        row = f'{key} — (Dibazol/Bendazole): препарат из СССР для'
+        keys, value = self.parse(row)
+        assert keys[0] == key.lower()
+
+    def test_key_strip(self):
+        key = 'Расторопша'
+        key2 = 'пятнистая'
+        row = f'{key} {key2}: фитотерапия для печени'
+        keys, value = self.parse(row)
+        assert keys == [key.lower(), key2]
