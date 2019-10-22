@@ -1,4 +1,5 @@
 import json
+import os
 
 from functools import wraps
 from telegram import Update
@@ -10,20 +11,25 @@ class Data:
     _data = None
 
     def load(self, json_path=DATA_FILE_PATH):
-        self._data = json.load(open(json_path))
+        self._data = json.load(open(os.path.expandvars(json_path)))
 
-    def get(self, key, not_found_message):
+    def get(self, key, not_found_message, processed_keys=None):
         if not self._data:
             self.load()
         result = not_found_message
         key = key.lower()
+        processed_keys = processed_keys or [key]
         if key in self._data:
             keys, value = self._data.get(key)
             if value:
                 result = value
             elif keys:
                 for cur_key in keys:
-                    value = DATA.get(cur_key, None)
+                    if cur_key in processed_keys:
+                        continue
+
+                    value = DATA.get(cur_key, None, processed_keys)
+                    processed_keys.append(cur_key)
                     if value:
                         result = value
                         break
