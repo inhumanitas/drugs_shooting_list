@@ -65,6 +65,7 @@ yc_deploy:
       --package-object-name ${ZIP_NAME}
       --description ${CI_COMMIT_SHORT_SHA}
       --environment TOKEN=${TOKEN}
+      --environment ADMIN_UID=${ADMIN_UID}
       --environment DATA_FILE_PATH=${data_file_path}
   only:
     - master

@@ -10,6 +10,10 @@ from drugs_shooting_list.settings import DATA_FILE_PATH
 class Data:
     _data = None
 
+    @property
+    def keys(self):
+        return self._data.keys() if self._data else []
+
     def load(self, json_path=DATA_FILE_PATH):
         self._data = json.load(open(os.path.expandvars(json_path)))
 
