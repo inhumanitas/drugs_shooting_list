@@ -67,9 +67,32 @@ class TestEncylopatiaParser:
         keys, value = self.parse(row)
         assert keys[0] == key.lower()
 
-    def test_key_strip(self):
+    def test_key_strip2(self):
         key = 'Расторопша'
         key2 = 'пятнистая'
         row = f'{key} {key2}: фитотерапия для печени'
         keys, value = self.parse(row)
         assert keys == [key.lower(), key2]
+
+    def test_key_strip3(self):
+        expected_keys = [
+            'Спреи с антибиотиками', 'антисептиками при рините', 'Изофра',
+            'Полидекса', 'Биопарокс', 'Мирамистин'
+        ]
+        value = 'применение местных антибиотиков в носу бессмысленно'
+
+        row = f'Спреи с антибиотиками/антисептиками при рините (Изофра,' \
+              f' Полидекса, Биопарокс, Мирамистин и пр.) — {value}'
+
+        keys, value = self.parse(row)
+        # FIXME
+        assert keys == [x.lower() for x in expected_keys] + ['спреи с антибиотиками', 'антисептиками при рините']
+        assert value == row
+
+    def test_key_strip4(self):
+        row = 'Иммунал (Иммунорм/Immunal): фитотерапевтический иммуномодулятор для профилактики ОРВИ и «укрепления» иммунитета — см. Эхинацея. Cochrane Reviews 0; Pubmed 0; FDA 0; RXlist 0; ВОЗ 0; ФК (-).'
+
+        keys, value = self.parse(row)
+
+        assert keys == ['иммунал', 'иммунорм', 'immunal']
+        assert value == row

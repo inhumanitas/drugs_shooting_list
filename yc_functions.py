@@ -1,35 +1,10 @@
-from telegram import ParseMode
 
-from drugs_shooting_list.bot import bot
-from drugs_shooting_list.utils import get_drug_info, to_tg_update, DATA
+from drugs_shooting_list.communication import process_message
 
 
-def echo_handler(update, context):
+def message_handler(event, context):
 
-    bot.send_message(
-        update.message.chat.id,
-        update.message.text
-    )
-
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'text/plain'
-        },
-        'isBase64Encoded': False,
-        'body': 'success'
-    }
-
-
-@to_tg_update(bot)
-def message_handler(update, context):
-
-    bot.send_message(
-        update.message.chat.id,
-        get_drug_info(update.message.text),
-        disable_web_page_preview=True,
-        parse_mode=ParseMode.HTML,
-    )
+    process_message(event)
 
     return {
         'statusCode': 200,

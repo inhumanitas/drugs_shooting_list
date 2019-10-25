@@ -59,7 +59,7 @@ class EncyclopatiaParser:
         row = row.rstrip('<>uli')
         row = row.strip('</>uli')
 
-        for current_sep in (':', ' - ', ' — '):
+        for current_sep in (':', ' — ', ' - '):
             key, sep,  description = row.partition(current_sep)
             if sep:
                 break
@@ -68,14 +68,18 @@ class EncyclopatiaParser:
 
         key = key.strip()
         description = description.strip().strip('.')
-
+        keys = []
         if '(' in key:
-            head, _keys = key.split('(', 1)
-            keys = [head] + _keys.split('/')
-        elif '/' in key:
-            keys = key.split('/')
+            key, _keys = key.split('(', 1)
+            splited = _keys.split('/')
+            if len(splited) == 1:
+                splited = _keys.split(',')
+            keys = key.split('/') + splited
+
+        if '/' in key:
+            keys += key.split('/')
         else:
-            keys = key.split()
+            keys = keys or key.split()
 
         if description.strip().startswith('см.'):
             keys.append(description.replace('см.', ''))
@@ -83,9 +87,10 @@ class EncyclopatiaParser:
         else:
             description = row.strip('</>lui')
 
-        keys = [x.lower().strip('(').strip(')').strip() for x in keys]
-        keys = [x.strip('—').strip() for x in keys]
-
+        keys = [x.lower().strip('(').strip(')') for x in keys]
+        keys = [x.replace('—', '') for x in keys]
+        keys = [x.replace('и пр.', '') for x in keys]
+        keys = [x.strip() for x in keys]
         return keys, description
 
     @classmethod
