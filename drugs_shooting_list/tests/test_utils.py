@@ -26,7 +26,7 @@ def test_get_drug_data(data):
 
 def test_get_drug_data_no_key():
     no_key = 'empty'
-    assert utils.get_drug_info(no_key, not_found_message=no_key) == no_key
+    assert utils.get_drug_info(no_key, default_value=no_key) == no_key
 
 
 def test_linked_get(data):
@@ -41,7 +41,7 @@ def test_empty_get():
     keys = ('key4', 'key5', '__key__')
     value = 'empty'
     for key in keys:
-        assert utils.get_drug_info(key, not_found_message=value) == value
+        assert utils.get_drug_info(key, default_value=value) == value
 
 
 def test_recursive_keys(data):
