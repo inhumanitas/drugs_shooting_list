@@ -1,6 +1,8 @@
 import difflib
+from uuid import uuid4
 
-from telegram import ParseMode
+from telegram import ParseMode, InlineQueryResultArticle, \
+    InputTextMessageContent
 
 from drugs_shooting_list.bot import bot, notify_admin
 from drugs_shooting_list.settings import ADMIN_UID
@@ -11,6 +13,19 @@ greeting_msg = 'Добро пожаловать'
 
 def predict_key(key):
     return difflib.get_close_matches(key, DATA.keys, 1, 0)
+
+
+def inline_search(update):
+    """Handle the inline query."""
+    query = update.inline_query.query
+    results = predict_key(query)
+    results = [
+        InlineQueryResultArticle(
+            id=uuid4(), title=x,
+            input_message_content=InputTextMessageContent(x)) for x in results
+    ]
+
+    return update.inline_query.answer(results)
 
 
 @to_tg_update(bot)
@@ -25,6 +40,9 @@ def process_message(update):
             greeting_msg,
         )
         result = f'New user {user_chat_id}'
+    elif update.inline_query.query:
+        return inline_search(update)
+
     else:
         keys = predict_key(text)
 
