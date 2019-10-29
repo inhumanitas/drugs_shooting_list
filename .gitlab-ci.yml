@@ -16,7 +16,6 @@ build:
   image: python:3.7
   before_script:
     - apt update && apt install zip
-    - pip install -r test_requirements.txt
   script:
     - export zip_path=$(pwd)
     - python drugs_shooting_list/parser/load.py

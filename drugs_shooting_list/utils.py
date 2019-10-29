@@ -2,7 +2,6 @@ import json
 import os
 
 from functools import wraps
-from telegram import Update
 
 from drugs_shooting_list.settings import DATA_FILE_PATH
 
@@ -44,6 +43,7 @@ DATA = Data()
 
 
 def to_tg_update(bot):
+    from telegram import Update
     def wrapped(fn):
         @wraps(fn)
         def inner(event, *args, **kwargs):
