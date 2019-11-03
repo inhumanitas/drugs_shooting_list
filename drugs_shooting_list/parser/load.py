@@ -95,12 +95,17 @@ class EncyclopatiaParser:
 
     @classmethod
     def normalize_html_to_tg(cls, html):
-        return html.replace(
-            '<del>', '<i>'
-        ).replace(
-            '</del>', '</i>'
-        ).replace(
-            'href="/', f'href="{cls.base_url}/')
+        result = html
+        forbidden_tags = (
+            'i',
+            'del',
+            'span',
+        )
+        result = result.replace('href="/', f'href="{cls.base_url}/')
+        for tag in forbidden_tags:
+            result = result.replace(f'<{tag}>', '')  # <tag>
+            result = result.replace(f'</{tag}>', '')  # </tag>
+        return result
 
 
 def load(data):
