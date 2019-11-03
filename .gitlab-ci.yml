@@ -19,7 +19,7 @@ build:
   script:
     - export zip_path=$(pwd)
     - python drugs_shooting_list/parser/load.py
-    - python -m drugs_shooting_list.func_test_result_json
+#    - python -m drugs_shooting_list.func_test_result_json
     - mv results.json drugs_shooting_list
     - zip --exclude test_*.py --exclude *.pyc --exclude *.txt -r ${zip_path}/${ZIP_NAME} drugs_shooting_list yc_functions.py
     - pip install -r requirements.txt --root requirements
@@ -32,6 +32,7 @@ build:
     expire_in: 10 mins
   only:
     - master
+    - tags
 
 yc_deploy:
   stage: deploy
@@ -41,7 +42,7 @@ yc_deploy:
     runtime: python37
     entrypoint: yc_functions.message_handler
     memory: 128m
-    execution_timeout: 1s
+    execution_timeout: 5s
     data_file_path: "/function/code/drugs_shooting_list/results.json"
   before_script:
     - pip install awscli
@@ -62,9 +63,9 @@ yc_deploy:
       --execution-timeout ${execution_timeout}
       --package-bucket-name ${BUCKET_NAME}
       --package-object-name ${ZIP_NAME}
-      --description ${CI_COMMIT_SHORT_SHA}
       --environment TOKEN=${TOKEN}
       --environment ADMIN_UID=${ADMIN_UID}
       --environment DATA_FILE_PATH=${data_file_path}
   only:
     - master
+    - tags
