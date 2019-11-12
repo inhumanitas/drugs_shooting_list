@@ -6,14 +6,14 @@ from drugs_shooting_list import utils
 @pytest.fixture()
 def data():
     data = {
-        'key1': ([], 'value1'),
-        'key2': (['key1'], None),
-        'key3': (['key2'], None),
-        'key4': ([], None),
-        'key5': ([], ''),
-        'key6': (['key7'], 'value6'),
-        'key7': (['key8', 'key6'], None),
-        'key8': (['key7'], None),
+        'key1': utils.DrugDescription([], 'value1', False),
+        'key2': utils.DrugDescription(['key1'], None, False),
+        'key3': utils.DrugDescription(['key2'], None, False),
+        'key4': utils.DrugDescription([], None, False),
+        'key5': utils.DrugDescription([], '', False),
+        'key6': utils.DrugDescription(['key7'], 'value6', False),
+        'key7': utils.DrugDescription(['key8', 'key6'], None, False),
+        'key8': utils.DrugDescription(['key7'], None, False),
     }
 
     utils.DATA._data = data
@@ -21,7 +21,7 @@ def data():
 
 
 def test_get_drug_data(data):
-    assert utils.get_drug_info('key1') == data['key1'][1]
+    assert utils.get_drug_info('key1') == data['key1'].description
 
 
 def test_get_drug_data_no_key():
@@ -31,7 +31,7 @@ def test_get_drug_data_no_key():
 
 def test_linked_get(data):
     key = 'key2'
-    value = data['key1'][1]
+    value = data['key1'].description
     assert utils.get_drug_info(key) == value
     key = 'key3'
     assert utils.get_drug_info(key) == value
@@ -46,4 +46,4 @@ def test_empty_get():
 
 def test_recursive_keys(data):
     key = 'key7'
-    assert utils.get_drug_info(key) == data['key6'][1]
+    assert utils.get_drug_info(key) == data['key6'].description

@@ -30,9 +30,9 @@ build:
     paths:
     - ${ZIP_NAME}
     expire_in: 10 mins
-  only:
-    - master
-    - tags
+#  only:
+#    - master
+#    - tags
 
 yc_deploy:
   stage: deploy
@@ -67,6 +67,6 @@ yc_deploy:
       --environment TOKEN=${TOKEN}
       --environment ADMIN_UID=${ADMIN_UID}
       --environment DATA_FILE_PATH=${data_file_path}
-  only:
-    - master
-    - tags
+#  only:
+#    - master
+#    - tags

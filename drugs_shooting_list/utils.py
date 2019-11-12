@@ -1,11 +1,22 @@
 import difflib
 import json
 import os
+from dataclasses import dataclass
 
 from functools import wraps
 
 from drugs_shooting_list.settings import DATA_FILE_PATH, INLINE_QUERY_LEN, \
     INLINE_QUERY_COUNT
+
+
+@dataclass
+class DrugDescription:
+    alter_keys: list
+    description: str or None
+    is_shooting: bool
+
+    def data(self):
+        return self.__dict__
 
 
 class Data:
@@ -22,25 +33,28 @@ class Data:
         return self.data.keys() if self.data else []
 
     def load(self, json_path=DATA_FILE_PATH):
-        self._data = json.load(open(os.path.expandvars(json_path)))
+        raw = json.load(open(os.path.expandvars(json_path)))
+        self._data = {}
+        for k, data in raw:
+            self._data[k] = DrugDescription(**data)
 
     def get(self, key, default_value, processed_keys=None):
         result = default_value
         key = key.lower()
         processed_keys = processed_keys or [key]
         if key in self.data:
-            keys, value = self.data.get(key)
-            if value:
-                result = value
-            elif keys:
-                for cur_key in keys:
+            drug_description = self.data.get(key)
+            if drug_description.description:
+                result = drug_description.description
+            elif drug_description.alter_keys:
+                for cur_key in drug_description.alter_keys:
                     if cur_key in processed_keys:
                         continue
 
-                    value = DATA.get(cur_key, None, processed_keys)
+                    description = self.get(cur_key, None, processed_keys)
                     processed_keys.append(cur_key)
-                    if value:
-                        result = value
+                    if description:
+                        result = description
                         break
         return result
 
